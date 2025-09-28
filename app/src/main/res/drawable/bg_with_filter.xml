@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Ảnh background gốc -->
+    <item android:drawable="@drawable/bg_horse_race" />
+
+    <!-- Filter overlay -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#80000000" /> <!-- Màu đen 50% trong suốt -->
+        </shape>
+    </item>
+</layer-list>

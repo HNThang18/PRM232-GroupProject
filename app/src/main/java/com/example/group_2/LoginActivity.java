@@ -1,24 +1,86 @@
 package com.example.group_2;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
+import com.example.group_2.entities.User;
+
+import java.util.ArrayList;
 
 public class LoginActivity extends AppCompatActivity {
+    private EditText edtUsername, edtPassword;
+    private Button btnLogin;
+    private TextView tvRegister;
+    private ArrayList<User> users = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        // Ánh xạ view
+        edtUsername = findViewById(R.id.edtUsername);
+        edtPassword = findViewById(R.id.edtPassword);
+        btnLogin = findViewById(R.id.btnLogin);
+        tvRegister = findViewById(R.id.tvRegister);
+
+        // Lấy danh sách user từ SharedPreferences
+        getUsersFromPreferences();
+
+        // Sự kiện Login
+        btnLogin.setOnClickListener(v -> login());
+
+        // Chuyển sang màn hình Register
+        tvRegister.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+            finish();
         });
+    }
+
+    private void getUsersFromPreferences() {
+        SharedPreferences sp = getSharedPreferences("Users", MODE_PRIVATE);
+        for (String username : sp.getAll().keySet()) {
+            String password = sp.getString(username, "");
+            users.add(new User(username, password));
+        }
+    }
+
+    private void login() {
+        String username = edtUsername.getText().toString().trim();
+        String password = edtPassword.getText().toString().trim();
+
+        if (username.isEmpty()) {
+            edtUsername.setError("Username is required");
+            return;
+        }
+        if (password.isEmpty()) {
+            edtPassword.setError("Password is required");
+            return;
+        }
+
+        boolean found = false;
+        for (User u : users) {
+            if (u.getUsername().equals(username) && u.getPassword().equals(password)) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        } else {
+            Toast.makeText(this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
+        }
     }
 }

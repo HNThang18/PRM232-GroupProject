@@ -1,10 +1,13 @@
 package com.example.group_2;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,97 +15,127 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
 
-    ProgressBar progressBarH1, progressBarH2, progressBarH3;
-    ImageView iconH1, iconH2, iconH3;
-
+    ProgressBar progress1, progress2, progress3;
+    ImageView horse1, horse2, horse3;
     Button btnStart, btnReset;
+
+    Random random = new Random();
+    Handler handler = new Handler(Looper.getMainLooper());
+
+    volatile boolean raceFinished = false; // để biết đã có Winner chưa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        AnhXa();
 
-        btnStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                btnStart.setEnabled(false);
-                btnReset.setEnabled(false);
-                startRaceForHorse3();
-            }
-        });
+        View horseView1 = findViewById(R.id.horse1);
+        View horseView2 = findViewById(R.id.horse2);
+        View horseView3 = findViewById(R.id.horse3);
+
+        progress1 = horseView1.findViewById(R.id.progressHorse);
+        progress2 = horseView2.findViewById(R.id.progressHorse);
+        progress3 = horseView3.findViewById(R.id.progressHorse);
+
+        horse1 = horseView1.findViewById(R.id.iconHorse);
+        horse2 = horseView2.findViewById(R.id.iconHorse);
+        horse3 = horseView3.findViewById(R.id.iconHorse);
+
+        btnStart = findViewById(R.id.btnStart);
+        btnReset = findViewById(R.id.btnReset);
+
+        btnStart.setOnClickListener(v -> startRace());
+        btnReset.setOnClickListener(v -> resetRace());
     }
 
+    private void startRace() {
+        raceFinished = false;
 
-    private void AnhXa(){
-        btnStart = (Button) findViewById(R.id.btnStart);
-        btnReset = (Button) findViewById(R.id.btnReset);
+        btnStart.setEnabled(false);
+        btnReset.setEnabled(false);
 
-        progressBarH3 = (ProgressBar) findViewById(R.id.progressHorse3);
-        iconH3 = (ImageView) findViewById(R.id.iconHorse3);
+        progress1.setProgress(0);
+        progress2.setProgress(0);
+        progress3.setProgress(0);
+
+        horse1.setTranslationX(0);
+        horse2.setTranslationX(0);
+        horse3.setTranslationX(0);
+
+        horse1.setImageResource(R.drawable.horse_running_icon);
+        horse2.setImageResource(R.drawable.horse_running_icon);
+        horse3.setImageResource(R.drawable.horse_running_icon);
+
+        runHorse(1, horse1, progress1);
+        runHorse(2, horse2, progress2);
+        runHorse(3, horse3, progress3);
     }
 
-    private void updateHorse3Position() {
-        progressBarH3.post(new Runnable() {
-            @Override
-            public void run() {
-                int progress = progressBarH3.getProgress();
-                int max = progressBarH3.getMax();
+    private void runHorse(int horseNumber, ImageView horse, ProgressBar progressBar) {
+        new Thread(() -> {
+            int progress = 0;
+            int maxProgress = 2000;
+            progressBar.setMax(maxProgress);
 
-                // Chiều rộng thực tế của progressBar
-                // Cần đảm bảo iconH3.getWidth() có giá trị hợp lệ (view đã được vẽ)
-                int barWidth = progressBarH3.getWidth() - iconH3.getWidth();
+            while (progress < maxProgress && !raceFinished) {
+                try {
+                    int step = random.nextInt(25) + 1;
+                    progress += step;
+                    if (progress > maxProgress) progress = maxProgress;
 
-                // Tính toán vị trí icon
-                float posX = (progress / (float) max) * barWidth;
+                    int finalProgress = progress;
 
-                // Set vị trí bằng dịch chuyển ngang
-                iconH3.setTranslationX(posX);
-            }
-        });
-    }
+                    handler.post(() -> {
+                        progressBar.setProgress(finalProgress);
 
-
-
-    private void startRaceForHorse3() {
-        iconH3.setImageResource(R.drawable.horse_running_icon);
-        progressBarH3.setProgress(2);
-        updateHorse3Position();
-
-        Thread thread = new Thread(new Runnable() { // Thread chính
-            @Override
-            public void run() {
-                for (int i = 0; i <= 100; i++){
-                    try {
-                        Thread.sleep(50); // Thời gian nghỉ giữa các bước tiến độ
-                    } catch (InterruptedException e){
-                        e.printStackTrace();
-                        // Nếu thread bị gián đoạn, có thể thoát vòng lặp
-                        break;
-                    }
-                    int finali = i;
-                    runOnUiThread(new Runnable() { // Sử dụng runOnUiThread để cập nhật UI trong Thread chính
-                        @Override
-                        public void run() {
-                            if (finali <= progressBarH3.getMax()) { // Đảm bảo không vượt quá max
-                                progressBarH3.setProgress(finali);
-                                updateHorse3Position();
-                            }
-                        }
+                        float maxDistance = progressBar.getWidth() - horse.getWidth();
+                        horse.setTranslationX(maxDistance * finalProgress / (float) maxProgress);
                     });
+
+                    Thread.sleep(random.nextInt(20) + 30); // 30–50ms
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                // Khi dừng -> đổi icon đứng
-                runOnUiThread(() -> {
-                    iconH3.setImageResource(R.drawable.horse_stop_icon);
-                    btnStart.setEnabled(false);
+            }
+
+            // check khi đạt maxProgress
+            if (progress >= maxProgress && !raceFinished) {
+                raceFinished = true;
+                handler.post(() -> {
+                    horse.setImageResource(R.drawable.horse_stop_icon);
+                    Toast.makeText(MainActivity.this,
+                            "🏆 Horse " + horseNumber + " đã thắng!",
+                            Toast.LENGTH_LONG).show();
+
+                    btnStart.setEnabled(true);
                     btnReset.setEnabled(true);
                 });
+            } else {
+                handler.post(() -> horse.setImageResource(R.drawable.horse_stop_icon));
             }
-        });
 
-        thread.start();
+        }).start();
+    }
+
+
+    private void resetRace() {
+        progress1.setProgress(0);
+        progress2.setProgress(0);
+        progress3.setProgress(0);
+
+        horse1.setTranslationX(0);
+        horse2.setTranslationX(0);
+        horse3.setTranslationX(0);
+
+        horse1.setImageResource(R.drawable.horse_stop_icon);
+        horse2.setImageResource(R.drawable.horse_stop_icon);
+        horse3.setImageResource(R.drawable.horse_stop_icon);
+
+        raceFinished = false;
     }
 }

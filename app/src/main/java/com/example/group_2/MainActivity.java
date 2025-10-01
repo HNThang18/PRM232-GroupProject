@@ -5,8 +5,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -14,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.group_2.entities.User;
 
 import java.util.Random;
 
@@ -23,8 +27,14 @@ public class MainActivity extends AppCompatActivity {
     ImageView horse1, horse2, horse3;
     Button btnStart, btnReset;
 
+    CheckBox cb1, cb2, cb3;
+
+    TextView tvBalanceNum, tvUsername;
+
     Random random = new Random();
     Handler handler = new Handler(Looper.getMainLooper());
+
+    int winner;
 
     volatile boolean raceFinished = false; // để biết đã có Winner chưa
 
@@ -32,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        User user = (User) getIntent().getSerializableExtra("user");
 
         View horseView1 = findViewById(R.id.horse1);
         View horseView2 = findViewById(R.id.horse2);
@@ -41,9 +53,22 @@ public class MainActivity extends AppCompatActivity {
         progress2 = horseView2.findViewById(R.id.progressHorse);
         progress3 = horseView3.findViewById(R.id.progressHorse);
 
+        cb1 = horseView1.findViewById(R.id.cbHorse);
+        cb2 = horseView2.findViewById(R.id.cbHorse);
+        cb3 = horseView3.findViewById(R.id.cbHorse);
+        cb1.setText("Horse 1");
+        cb2.setText("Horse 2");
+        cb3.setText("Horse 3");
+
         horse1 = horseView1.findViewById(R.id.iconHorse);
         horse2 = horseView2.findViewById(R.id.iconHorse);
         horse3 = horseView3.findViewById(R.id.iconHorse);
+
+        tvBalanceNum = findViewById(R.id.tvBalanceNum);
+        tvBalanceNum.setText(String.valueOf(user.getMoney()));
+
+        tvUsername = findViewById(R.id.tvUsername);
+        tvUsername.setText("Username: " + user.getUsername());
 
         btnStart = findViewById(R.id.btnStart);
         btnReset = findViewById(R.id.btnReset);
@@ -108,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 raceFinished = true;
                 handler.post(() -> {
                     horse.setImageResource(R.drawable.horse_stop_icon);
+                    winner = horseNumber;
                     Toast.makeText(MainActivity.this,
                             "🏆 Horse " + horseNumber + " đã thắng!",
                             Toast.LENGTH_LONG).show();

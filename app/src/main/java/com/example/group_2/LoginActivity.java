@@ -53,7 +53,6 @@ public class LoginActivity extends AppCompatActivity {
             users.add(new User(username, password));
         }
     }
-
     private void login() {
         String username = edtUsername.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
@@ -67,20 +66,24 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        boolean found = false;
+        User loggedUser = null;
         for (User u : users) {
             if (u.getUsername().equals(username) && u.getPassword().equals(password)) {
-                found = true;
+                loggedUser = u; // gán thẳng user tìm thấy
+                loggedUser.setMoney(1000); // nếu muốn reset money = 0
                 break;
             }
         }
 
-        if (found) {
+        if (loggedUser != null) {
             Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            intent.putExtra("user", loggedUser);  // gửi object qua intent
+            startActivity(intent);
             finish();
         } else {
             Toast.makeText(this, "Invalid Username or Password", Toast.LENGTH_SHORT).show();
         }
     }
+
 }

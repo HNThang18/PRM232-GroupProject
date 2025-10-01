@@ -17,8 +17,11 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.group_2.entities.User;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     Random random = new Random();
     Handler handler = new Handler(Looper.getMainLooper());
 
-    int winner;
+    ArrayList<Integer> rank = new ArrayList<>();
 
     volatile boolean raceFinished = false; // để biết đã có Winner chưa
 
@@ -43,35 +46,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        User user = (User) getIntent().getSerializableExtra("user");
-
-        View horseView1 = findViewById(R.id.horse1);
-        View horseView2 = findViewById(R.id.horse2);
-        View horseView3 = findViewById(R.id.horse3);
-
-        progress1 = horseView1.findViewById(R.id.progressHorse);
-        progress2 = horseView2.findViewById(R.id.progressHorse);
-        progress3 = horseView3.findViewById(R.id.progressHorse);
-
-        cb1 = horseView1.findViewById(R.id.cbHorse);
-        cb2 = horseView2.findViewById(R.id.cbHorse);
-        cb3 = horseView3.findViewById(R.id.cbHorse);
-        cb1.setText("Horse 1");
-        cb2.setText("Horse 2");
-        cb3.setText("Horse 3");
-
-        horse1 = horseView1.findViewById(R.id.iconHorse);
-        horse2 = horseView2.findViewById(R.id.iconHorse);
-        horse3 = horseView3.findViewById(R.id.iconHorse);
-
-        tvBalanceNum = findViewById(R.id.tvBalanceNum);
-        tvBalanceNum.setText(String.valueOf(user.getMoney()));
-
-        tvUsername = findViewById(R.id.tvUsername);
-        tvUsername.setText("Username: " + user.getUsername());
-
-        btnStart = findViewById(R.id.btnStart);
-        btnReset = findViewById(R.id.btnReset);
+        initViews();
 
         btnStart.setOnClickListener(v -> startRace());
         btnReset.setOnClickListener(v -> resetRace());
@@ -79,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startRace() {
         raceFinished = false;
+        rank.clear();
 
         btnStart.setEnabled(false);
         btnReset.setEnabled(false);
@@ -91,9 +67,20 @@ public class MainActivity extends AppCompatActivity {
         horse2.setTranslationX(0);
         horse3.setTranslationX(0);
 
-        horse1.setImageResource(R.drawable.horse_running_icon);
-        horse2.setImageResource(R.drawable.horse_running_icon);
-        horse3.setImageResource(R.drawable.horse_running_icon);
+        Glide.with(MainActivity.this)
+                .asGif()
+                .load(R.drawable.running_horse) // file horse_running.gif đặt trong res/drawable
+                .into(horse1);
+
+        Glide.with(MainActivity.this)
+                .asGif()
+                .load(R.drawable.running_horse)
+                .into(horse2);
+
+        Glide.with(MainActivity.this)
+                .asGif()
+                .load(R.drawable.running_horse)
+                .into(horse3);
 
         runHorse(1, horse1, progress1);
         runHorse(2, horse2, progress2);
@@ -106,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
             int maxProgress = 2000;
             progressBar.setMax(maxProgress);
 
-            while (progress < maxProgress && !raceFinished) {
+            while (progress < maxProgress) { // bỏ raceFinished ở đây
                 try {
-                    int step = random.nextInt(25) + 1;
+                    int step = random.nextInt(30) + 1;
                     progress += step;
                     if (progress > maxProgress) progress = maxProgress;
 
@@ -121,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                         horse.setTranslationX(maxDistance * finalProgress / (float) maxProgress);
                     });
 
-                    Thread.sleep(random.nextInt(20) + 30); // 30–50ms
+                    Thread.sleep(random.nextInt(20) + 30);
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -129,20 +116,28 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // check khi đạt maxProgress
-            if (progress >= maxProgress && !raceFinished) {
-                raceFinished = true;
+            if (progress >= maxProgress) {
                 handler.post(() -> {
                     horse.setImageResource(R.drawable.horse_stop_icon);
-                    winner = horseNumber;
-                    Toast.makeText(MainActivity.this,
-                            "🏆 Horse " + horseNumber + " đã thắng!",
-                            Toast.LENGTH_LONG).show();
 
-                    btnStart.setEnabled(true);
-                    btnReset.setEnabled(true);
+                    // nếu chưa ghi nhận thì thêm vào rank
+                    if (!rank.contains(horseNumber)) {
+                        rank.add(horseNumber);
+                    }
+
+                    // nếu đủ số ngựa về đích thì hiện kết quả
+                    if (rank.size() == 3) { // hoặc totalHorses nếu bạn có nhiều hơn 3
+                        StringBuilder result = new StringBuilder("Kết quả: ");
+                        for (int i = 0; i < rank.size(); i++) {
+                            result.append(rank.get(i));
+                        }
+
+                        Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_LONG).show();
+
+                        btnStart.setEnabled(true);
+                        btnReset.setEnabled(true);
+                    }
                 });
-            } else {
-                handler.post(() -> horse.setImageResource(R.drawable.horse_stop_icon));
             }
 
         }).start();
@@ -163,5 +158,38 @@ public class MainActivity extends AppCompatActivity {
         horse3.setImageResource(R.drawable.horse_stop_icon);
 
         raceFinished = false;
+    }
+
+    private void initViews() {
+        User user = (User) getIntent().getSerializableExtra("user");
+
+        View horseView1 = findViewById(R.id.horse1);
+        View horseView2 = findViewById(R.id.horse2);
+        View horseView3 = findViewById(R.id.horse3);
+
+        progress1 = horseView1.findViewById(R.id.progressHorse);
+        progress2 = horseView2.findViewById(R.id.progressHorse);
+        progress3 = horseView3.findViewById(R.id.progressHorse);
+
+        cb1 = horseView1.findViewById(R.id.cbHorse);
+        cb2 = horseView2.findViewById(R.id.cbHorse);
+        cb3 = horseView3.findViewById(R.id.cbHorse);
+
+        cb1.setText("Horse 1");
+        cb2.setText("Horse 2");
+        cb3.setText("Horse 3");
+
+        horse1 = horseView1.findViewById(R.id.iconHorse);
+        horse2 = horseView2.findViewById(R.id.iconHorse);
+        horse3 = horseView3.findViewById(R.id.iconHorse);
+
+        tvBalanceNum = findViewById(R.id.tvBalanceNum);
+        tvBalanceNum.setText(String.valueOf(user.getMoney()));
+
+        tvUsername = findViewById(R.id.tvUsername);
+        tvUsername.setText("Username: " + user.getUsername());
+
+        btnStart = findViewById(R.id.btnStart);
+        btnReset = findViewById(R.id.btnReset);
     }
 }

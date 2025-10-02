@@ -1,5 +1,6 @@
 package com.example.group_2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -152,7 +153,21 @@ public class MainActivity extends AppCompatActivity {
 
                         Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_LONG).show();
 
-                        resolveBet(rank.get(0)); // chỉ con về nhất
+                        int lastNetChange = resolveBet(rank.get(0)); // chỉ con về nhất
+
+                        String winLoseMsg;
+                        if (lastNetChange >= 0) {
+                            winLoseMsg = "Bạn đã THẮNG! +" + lastNetChange + "$";
+                        } else {
+                            winLoseMsg = "Bạn đã THUA " + (-lastNetChange) + "$";
+                        }
+
+                        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+                        intent.putIntegerArrayListExtra("rank", rank);
+                        intent.putExtra("winLose", winLoseMsg);
+                        intent.putExtra("balance", currentBalance);
+                        intent.putExtra("user", user);
+                        startActivity(intent);
 
                         btnStart.setEnabled(true);
                         btnReset.setEnabled(true);
@@ -287,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Bet placed: " + betMap.toString() + "  (total: $" + totalStake + ")", Toast.LENGTH_LONG).show();
     }
 
-    private void resolveBet(int winner) {
+    private int resolveBet(int winner) {
         int netChange = 0;
 
         for (Map.Entry<Integer, Integer> entry : betMap.entrySet()) {
@@ -328,6 +343,8 @@ public class MainActivity extends AppCompatActivity {
         if (user != null) {
             user.setMoney(currentBalance);
         }
+
+        return netChange;
     }
     private void updateBalancePreview() {
         int totalStake = 0;

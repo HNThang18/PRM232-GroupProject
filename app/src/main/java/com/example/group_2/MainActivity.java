@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     ProgressBar progress1, progress2, progress3;
     ImageView horse1, horse2, horse3;
-    Button btnStart, btnReset;
+    Button btnStart, btnExit;
 
     CheckBox cb1, cb2, cb3;
 
@@ -68,7 +68,13 @@ public class MainActivity extends AppCompatActivity {
             startRace();
         });
 
-        btnReset.setOnClickListener(v -> resetRace());
+        btnExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void startRace() {
@@ -76,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         rank.clear();
 
         btnStart.setEnabled(false);
-        btnReset.setEnabled(false);
+        btnExit.setEnabled(false);
 
         progress1.setProgress(0);
         progress2.setProgress(0);
@@ -170,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(intent);
 
                         btnStart.setEnabled(true);
-                        btnReset.setEnabled(true);
+                        btnExit.setEnabled(true);
                     }
                 });
             }
@@ -178,31 +184,30 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-
-    private void resetRace() {
-        progress1.setProgress(0);
-        progress2.setProgress(0);
-        progress3.setProgress(0);
-
-        horse1.setTranslationX(0);
-        horse2.setTranslationX(0);
-        horse3.setTranslationX(0);
-
-        horse1.setImageResource(R.drawable.horse_stop_icon);
-        horse2.setImageResource(R.drawable.horse_stop_icon);
-        horse3.setImageResource(R.drawable.horse_stop_icon);
-
-        raceFinished = false;
-        betPlaced = false;
-        betMap.clear();
-        edtBet1.setText("");
-        edtBet2.setText("");
-        edtBet3.setText("");
-        cb1.setChecked(false);
-        cb2.setChecked(false);
-        cb3.setChecked(false);
-
-    }
+//    private void resetRace() {
+//        progress1.setProgress(0);
+//        progress2.setProgress(0);
+//        progress3.setProgress(0);
+//
+//        horse1.setTranslationX(0);
+//        horse2.setTranslationX(0);
+//        horse3.setTranslationX(0);
+//
+//        horse1.setImageResource(R.drawable.horse_stop_icon);
+//        horse2.setImageResource(R.drawable.horse_stop_icon);
+//        horse3.setImageResource(R.drawable.horse_stop_icon);
+//
+//        raceFinished = false;
+//        betPlaced = false;
+//        betMap.clear();
+//        edtBet1.setText("");
+//        edtBet2.setText("");
+//        edtBet3.setText("");
+//        cb1.setChecked(false);
+//        cb2.setChecked(false);
+//        cb3.setChecked(false);
+//
+//    }
 
     private void initViews() {
         user = (User) getIntent().getSerializableExtra("user");
@@ -241,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
         tvUsername.setText("Username: " + user.getUsername());
 
         btnStart = findViewById(R.id.btnStart);
-        btnReset = findViewById(R.id.btnReset);
+        btnExit = findViewById(R.id.btnExit);
 
         cb1.setOnCheckedChangeListener((buttonView, isChecked) -> updateBalancePreview());
         cb2.setOnCheckedChangeListener((buttonView, isChecked) -> updateBalancePreview());

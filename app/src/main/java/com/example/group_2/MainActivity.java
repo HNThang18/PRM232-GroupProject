@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import android.media.SoundPool;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,15 +53,30 @@ public class MainActivity extends AppCompatActivity {
 
     volatile boolean raceFinished = false; // để biết đã có Winner chưa
 
+    private SoundPool soudPool;
+    private int runSoundId;
+    private int winSoundId;
+    private int loseSoundId;
+    private int buttonSoundId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        startService(new Intent(this, BackgroundMusicService.class));
+
         initViews();
+
+        soudPool = new SoundPool.Builder().setMaxStreams(5).build();
+        runSoundId = soudPool.load(this, R.raw.horse_run, 1);
+        winSoundId = soudPool.load(this, R.raw.win, 1);
+        loseSoundId = soudPool.load(this, R.raw.lose, 1);
+        buttonSoundId = soudPool.load(this, R.raw.button, 1);
 
         //btnStart.setOnClickListener(v -> startRace());
         btnStart.setOnClickListener(v -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
             if (!betPlaced) {
                 placeBet();
                 if (!betPlaced) return;
@@ -71,10 +87,21 @@ public class MainActivity extends AppCompatActivity {
         btnExit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this, BackgroundMusicService.class));
+        if(soudPool != null){
+            soudPool.release();
+            soudPool = null;
+        }
     }
 
     private void startRace() {
@@ -113,7 +140,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void runHorse(int horseNumber, ImageView horse, ProgressBar progressBar) {
+        stopService(new Intent(this, BackgroundMusicService.class));
         new Thread(() -> {
+            soudPool.play(runSoundId, 1, 1, 0, 0, 1);
             int progress = 0;
             int maxProgress = 2000;
             progressBar.setMax(maxProgress);
@@ -164,8 +193,10 @@ public class MainActivity extends AppCompatActivity {
                         String winLoseMsg;
                         if (lastNetChange >= 0) {
                             winLoseMsg = "Bạn đã THẮNG! +" + lastNetChange + "$";
+                            soudPool.play(winSoundId, 1, 1, 0, 0, 1);
                         } else {
                             winLoseMsg = "Bạn đã THUA " + (-lastNetChange) + "$";
+                            soudPool.play(loseSoundId, 1, 1, 0, 0, 1);
                         }
 
                         Intent intent = new Intent(MainActivity.this, ResultActivity.class);
@@ -262,16 +293,19 @@ public class MainActivity extends AppCompatActivity {
         edtBet3.setEnabled(false);
 
         cb1.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
             edtBet1.setEnabled(isChecked);
             if (!isChecked) edtBet1.setText("");
         });
 
         cb2.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
             edtBet2.setEnabled(isChecked);
             if (!isChecked) edtBet2.setText("");
         });
 
         cb3.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
             edtBet3.setEnabled(isChecked);
             if (!isChecked) edtBet3.setText("");
         });

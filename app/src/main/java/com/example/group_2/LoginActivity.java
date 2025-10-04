@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.media.SoundPool;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,12 +21,19 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private TextView tvRegister;
     private ArrayList<User> users = new ArrayList<>();
+    private SoundPool soudPool;
+    private int buttonSoundId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
+
+        startService(new Intent(this, BackgroundMusicService.class));
+
+        soudPool = new SoundPool.Builder().setMaxStreams(1).build();
+        buttonSoundId = soudPool.load(this, R.raw.button, 1);
 
         // Ánh xạ view
         edtUsername = findViewById(R.id.edtUsername);
@@ -37,10 +45,14 @@ public class LoginActivity extends AppCompatActivity {
         getUsersFromPreferences();
 
         // Sự kiện Login
-        btnLogin.setOnClickListener(v -> login());
+        btnLogin.setOnClickListener(v -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
+            login();
+        });
 
         // Chuyển sang màn hình Register
         tvRegister.setOnClickListener(v -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
             finish();
         });
@@ -79,6 +91,9 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra("user", loggedUser);  // gửi object qua intent
+
+            stopService(new Intent(this, BackgroundMusicService.class));
+
             startActivity(intent);
             finish();
         } else {

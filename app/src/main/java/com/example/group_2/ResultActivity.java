@@ -8,12 +8,19 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import android.media.SoundPool;
 
 public class ResultActivity extends AppCompatActivity {
+    private SoundPool soudPool;
+    private int buttonSoundId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.result_layout);
+
+        soudPool = new SoundPool.Builder().setMaxStreams(1).build();
+        buttonSoundId = soudPool.load(this, R.raw.button, 1);
 
         TextView tvRank1 = findViewById(R.id.tvRank1);
         TextView tvRank2 = findViewById(R.id.tvRank2);
@@ -45,12 +52,16 @@ public class ResultActivity extends AppCompatActivity {
         tvMoneyResult.setText("Số dư: $" + balance);
 
         btnPlayAgain.setOnClickListener(v -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
             Intent i = new Intent(ResultActivity.this, MainActivity.class);
             i.putExtra("user", getIntent().getSerializableExtra("user"));
             startActivity(i);
             finish();
         });
 
-        btnExit.setOnClickListener(v -> finishAffinity());
+        btnExit.setOnClickListener(v -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
+            finishAffinity();
+        });
     }
 }

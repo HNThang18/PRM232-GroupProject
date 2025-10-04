@@ -10,17 +10,23 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import android.media.SoundPool;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText edtUsername, edtPassword, edtConfirmPassword;
     private Button btnRegister;
     private TextView tvLogin;
+    private SoundPool soudPool;
+    private int buttonSoundId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
+
+        soudPool = new SoundPool.Builder().setMaxStreams(1).build();
+        buttonSoundId = soudPool.load(this, R.raw.button, 1);
 
         // Ánh xạ view
         edtUsername = findViewById(R.id.edtUsername);
@@ -30,10 +36,14 @@ public class RegisterActivity extends AppCompatActivity {
         tvLogin = findViewById(R.id.tvLogin);
 
         // Sự kiện Register
-        btnRegister.setOnClickListener(v -> register());
+        btnRegister.setOnClickListener(v -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
+            register();
+        });
 
         // Quay lại Login
         tvLogin.setOnClickListener(v -> {
+            soudPool.play(buttonSoundId, 1, 1, 0, 0, 1);
             startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
             finish();
         });

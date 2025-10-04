@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                             result.append(rank.get(i));
                         }
 
-                        Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_LONG).show();
+//                        Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_LONG).show();
 
                         int lastNetChange = resolveBet(rank.get(0)); // chỉ con về nhất
 
@@ -255,6 +255,26 @@ public class MainActivity extends AppCompatActivity {
         edtBet1.addTextChangedListener(new SimpleTextWatcher(() -> updateBalancePreview()));
         edtBet2.addTextChangedListener(new SimpleTextWatcher(() -> updateBalancePreview()));
         edtBet3.addTextChangedListener(new SimpleTextWatcher(() -> updateBalancePreview()));
+
+        // ban đầu disable hết
+        edtBet1.setEnabled(false);
+        edtBet2.setEnabled(false);
+        edtBet3.setEnabled(false);
+
+        cb1.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            edtBet1.setEnabled(isChecked);
+            if (!isChecked) edtBet1.setText("");
+        });
+
+        cb2.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            edtBet2.setEnabled(isChecked);
+            if (!isChecked) edtBet2.setText("");
+        });
+
+        cb3.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            edtBet3.setEnabled(isChecked);
+            if (!isChecked) edtBet3.setText("");
+        });
     }
 
     private void placeBet() {

@@ -94,7 +94,7 @@
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="Play again"
+                    android:text="Chơi lại"
                     android:textStyle="bold"
                     android:textColor="#FFF"
                     app:backgroundTint="#4CAF50"/>
@@ -105,7 +105,7 @@
                     android:layout_height="50dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:text="Exit"
+                    android:text="Thoát"
                     android:textStyle="bold"
                     android:textColor="#FFF"
                     app:backgroundTint="#F44336"/>

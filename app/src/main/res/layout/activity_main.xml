@@ -112,7 +112,7 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_weight="1"
-            android:text="🚀 START RACE"
+            android:text="🚀 BẮT ĐẦU"
             android:textColor="#FFF"
             android:textStyle="bold"
             app:backgroundTint="#4CAF50" />
@@ -123,7 +123,7 @@
             android:layout_height="56dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="🔄 Exit"
+            android:text="🔄 THOÁT"
             android:textColor="#FFF"
             android:textStyle="bold"
             app:backgroundTint="#F44336" />
